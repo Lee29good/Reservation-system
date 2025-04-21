@@ -19,8 +19,17 @@ $is_admin = $_SESSION['is_admin'];
     <title>預約查詢</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html, body {
+            overflow: hidden;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            background: #f0f8ff;
+            background-image: url("images/bg.jpg");
+            background-size: cover;      /* 背景填滿畫面 */
+            background-repeat: no-repeat; /* 不重複 */
+            background-position: center;  /* 置中 */
         }
         .navbar {
             background-color: #1f2a38;

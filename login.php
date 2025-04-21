@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['is_admin'] = $user['is_admin']; // NEW!
-        header("Location: info.php");
+        header("Location: index.php");
         exit;
     } else {
         $error = "帳號或密碼錯誤。";
@@ -32,8 +32,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>登入 | 圖書館預約系統</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html, body {
+            overflow: hidden;
+            height: 100%;        /* 🔥 關鍵！讓背景圖片能填滿整個視窗 */
+            margin: 0;           /* 移除預設外距 */
+            padding: 0;          /* 移除預設內距 */
+        }
         body {
-            background: #f2f4f8;
+            background-image: url("images/bg.jpg");
+            background-size: cover;      /* 背景填滿畫面 */
+            background-repeat: no-repeat; /* 不重複 */
+            background-position: center;  /* 置中 */
         }
         .login-box {
             max-width: 400px;

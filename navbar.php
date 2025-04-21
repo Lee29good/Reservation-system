@@ -2,7 +2,7 @@
     <div class="container-fluid">
         <div class="d-flex w-100 nav-buttons">
             <!-- 左側選單項目 -->
-            <a class="flex-fill text-center nav-link-custom" href="info.php">📅 預約狀況</a>
+            <a class="flex-fill text-center nav-link-custom" href="index.php">📅 預約狀況</a>
             <!-- 右側三個選單 -->
             <a class="flex-fill text-center nav-link-custom" href="add_reservation.php">➕ 新增預約</a>
             <a class="flex-fill text-center nav-link-custom" href="record_query.php">⚠️ 紀錄查詢</a>

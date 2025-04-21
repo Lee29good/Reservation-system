@@ -45,8 +45,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>註冊 | 圖書館預約系統</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html, body {
+            overflow: hidden;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            background: #f2f4f8;
+            background-image: url("images/bg.jpg");
+            background-size: cover;      /* 背景填滿畫面 */
+            background-repeat: no-repeat; /* 不重複 */
+            background-position: center;  /* 置中 */
         }
         .register-box {
             max-width: 500px;
@@ -114,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <button type="submit" class="btn btn-success w-100">建立帳號</button>
         <div class="mt-3 text-center">
-            登入帳號?<a href="register.php"> 登入</a>
+            登入帳號?<a href="login.php"> 登入</a>
         </div>
     </form>
 

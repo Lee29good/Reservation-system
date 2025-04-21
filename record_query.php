@@ -13,27 +13,17 @@ if (!isset($_SESSION['user_id'])) {
     <title>紀錄查詢</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+        html, body {
+            overflow: hidden;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            background: url('background.png') no-repeat center center fixed;
-            background-size: cover;
-        }
-
-        .navbar {
-            background-color: #1f2a38;
-        }
-
-        .nav-link-custom {
-            color: white;
-            text-decoration: none;
-            padding: 10px 0;
-            transition: all 0.3s ease;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-
-        .nav-link-custom:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #ffd700;
+            background-image: url("images/bg.jpg");
+            background-size: cover;      /* 背景填滿畫面 */
+            background-repeat: no-repeat; /* 不重複 */
+            background-position: center;  /* 置中 */
         }
 
         .query-button {
@@ -44,7 +34,11 @@ if (!isset($_SESSION['user_id'])) {
             border: none;
             border-radius: 8px;
             margin-bottom: 15px;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        .query-button:hover {
+            transform: scale(1.03);                      /* 稍微放大 */
+            filter: brightness(1.1);                     /* 變亮 */      /* 加深陰影 */
+            transition: all 0.2s ease-in-out;            /* 動畫平滑 */
         }
 
         .btn-purple { background-color: #9b59b6; }
@@ -53,6 +47,13 @@ if (!isset($_SESSION['user_id'])) {
         .btn-red { background-color: #e74c3c; }
         .btn-yellow { background-color: #f1c40f; color: #1f2a38; }
 
+        /* 個別 hover 顏色處理 */
+        .btn-purple:hover {background-color: #9b59b6; /* 稍亮的紫色 */}
+        .btn-blue:hover {background-color: #2980b9; /* 稍亮的藍色 */}
+        .btn-green:hover { background-color: #1abc9c; /* 稍亮的綠色 */}
+        .btn-red:hover {background-color: #e74c3c; /* 稍亮的紅色 */}
+        .btn-yellow:hover {background-color: #f1c40f; color: #1f2a38; }
+        
         .form-control {
             text-align: center;
             font-size: 1rem;
