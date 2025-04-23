@@ -15,7 +15,6 @@ if (!isset($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         html, body {
-            overflow: hidden;
             height: 100%;
             margin: 0;
             padding: 0;
@@ -25,6 +24,7 @@ if (!isset($_SESSION['user_id'])) {
             background-size: cover;      /* 背景填滿畫面 */
             background-repeat: no-repeat; /* 不重複 */
             background-position: center;  /* 置中 */
+            background-attachment: fixed; /* ✅ 讓背景固定 */
         }
         .reservation-btn {
             margin-bottom: 15px;
@@ -354,28 +354,33 @@ function openSelectSeatModal(roomType, startDate, endDate, position) {
         fetch(`/Reservation-system/includes/get_all_seats.php?room_type=${roomType}&position=${position}`)
             .then(res => res.json()),
         fetch(`/Reservation-system/includes/get_reserved_seats.php?room_type=${roomType}&start=${startDate}&end=${endDate}`)
+            .then(res => res.json()),
+        fetch(`/Reservation-system/includes/get_blocked_seat.php?start=${startDate}&end=${endDate}`)
             .then(res => res.json())
     ])
-    .then(([seats, reservedSeatIds]) => {
+    .then(([seats, reservedSeatIds, blockedSeatIds]) => {
         console.log("✅ 所有座位資料 seats:", seats);
         console.log("❌ 已被預約的座位 reservedSeatIds:", reservedSeatIds);
+        console.log("⛔ 被封鎖的座位 blockedSeatIds:", blockedSeatIds);
 
         const container = document.getElementById('seatSelectionContainer');
-        container.innerHTML = ''; // 清空容器
+        container.innerHTML = '';
 
         const fragment = document.createDocumentFragment();
 
         seats.forEach(seat => {
             const isReserved = reservedSeatIds.includes(Number(seat.seat_id));
+            const isBlocked = blockedSeatIds.includes(Number(seat.seat_id));
             const hasPower = seat.has_power_outlet == 1;
             const powerIcon = hasPower ? '🔌有插座' : '';
 
-            const reservedClass = isReserved ? 'bg-light text-muted border-secondary' : 'border-primary';
+            let statusClass = 'border-primary';
+            if (isBlocked) seatClass = 'bg-light text-danger border-danger';
+            else if (isReserved) statusClass = 'bg-light text-muted border-secondary';
 
             const seatDiv = document.createElement('div');
-            seatDiv.className = `d-flex justify-content-between align-items-center border rounded px-3 py-2 mb-2 ${reservedClass}`;
+            seatDiv.className = `d-flex justify-content-between align-items-center border rounded px-3 py-2 mb-2 ${statusClass}`;
 
-            // 左側：radio + 座位名稱
             const leftDiv = document.createElement('div');
             leftDiv.className = 'd-flex align-items-center gap-2';
 
@@ -385,34 +390,27 @@ function openSelectSeatModal(roomType, startDate, endDate, position) {
             seatInput.name = 'selectedSeat';
             seatInput.id = `seat${seat.seat_id}`;
             seatInput.value = seat.seat_id;
-            seatInput.disabled = isReserved;
+            seatInput.disabled = isReserved || isBlocked;
 
             const seatLabel = document.createElement('label');
             seatLabel.className = 'form-check-label fw-bold m-0';
             seatLabel.setAttribute('for', seatInput.id);
-            seatLabel.innerHTML = `【${seat.seat_id}】`;
 
-             // ➕ 加上「（已預約）」文字提示
-            seatLabel.innerHTML = `【${seat.seat_id}】${isReserved ? '（已預約）' : ''}`;   
-            
+            let statusText = '';
+            if (isBlocked) statusText = '（不可預約）';
+            else if (isReserved) statusText = '（已預約）';
+
+            seatLabel.innerHTML = `【${seat.seat_id}】${statusText}`;
+
             leftDiv.appendChild(seatInput);
             leftDiv.appendChild(seatLabel);
 
-            // 右側：日期與插座資訊
             const rightDiv = document.createElement('div');
             rightDiv.className = 'text-end small';
-            if(startDate=endDate){
-                rightDiv.innerHTML = `
-                    <div>${startDate}</div>
-                    <div class="text-success">${powerIcon}</div>
-                `;
-            }else{
-                rightDiv.innerHTML = `
-                    <div>${startDate}~${endDate}</div>
-                    <div class="text-success">${powerIcon}</div>
-                `;
-            }
-            
+            rightDiv.innerHTML = `
+                <div>${startDate === endDate ? startDate : `${startDate}~${endDate}`}</div>
+                <div class="text-success">${powerIcon}</div>
+            `;
 
             seatDiv.appendChild(leftDiv);
             seatDiv.appendChild(rightDiv);
@@ -432,6 +430,53 @@ function openSelectSeatModal(roomType, startDate, endDate, position) {
         `;
     });
 }
+
+document.getElementById('confirmSeatBtn').addEventListener('click', () => {
+    // 1. 取得選取的 seat_id
+    const selectedSeatInput = document.querySelector('input[name="selectedSeat"]:checked');
+    if (!selectedSeatInput) {
+        alert("請選擇一個座位！");
+        return;
+    }
+    const seatId = selectedSeatInput.value;
+
+    // 2.取得 start & end date
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    console.log("✔️ seat_id:", seatId);
+    console.log("📅 start:", startDate, "| end:", endDate);
+
+    // 3. 發送 API 請求（範例）
+    fetch('/Reservation-system/includes/create_reservation.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            seat_id: seatId,
+            start_date: startDate,
+            end_date: endDate
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("✅ 預約成功！");
+            // 重新整理或顯示成功畫面
+            // ✅ 關閉 Modal
+            const selectSeatModalEl = document.getElementById('selectSeatModal');
+            const modalInstance = bootstrap.Modal.getInstance(selectSeatModalEl);
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+        } else {
+            alert("❌ 預約失敗：" + data.message);
+        }
+    })
+    .catch(err => {
+        console.error("⚠️ 發生錯誤：", err);
+        alert("伺服器錯誤，請稍後再試。");
+    });
+});
 
 </script>
 </html>

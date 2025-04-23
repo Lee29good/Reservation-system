@@ -10,6 +10,7 @@ $sql = "
     FROM reservation r
     JOIN seat s ON r.seat_id = s.seat_id
     WHERE s.room_type = :room_type
+    AND r.status = 'reserved'
     AND NOT (r.end_date < :start OR r.start_date > :end)
 ";
 

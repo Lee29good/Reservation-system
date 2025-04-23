@@ -33,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         html, body {
-            overflow: hidden;
             height: 100%;        /* 🔥 關鍵！讓背景圖片能填滿整個視窗 */
             margin: 0;           /* 移除預設外距 */
             padding: 0;          /* 移除預設內距 */
@@ -43,6 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-size: cover;      /* 背景填滿畫面 */
             background-repeat: no-repeat; /* 不重複 */
             background-position: center;  /* 置中 */
+            background-attachment: fixed; /* ✅ 讓背景固定 */
         }
         .login-box {
             max-width: 400px;
