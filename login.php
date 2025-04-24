@@ -16,8 +16,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // 登入成功
         $_SESSION['user_id'] = $user['user_id'];
         $_SESSION['username'] = $user['username'];
-        $_SESSION['is_admin'] = $user['is_admin']; // NEW!
-        header("Location: index.php");
+        $_SESSION['is_admin'] = $user['is_admin'];
+
+        // ✅ 判斷是否為管理員
+        if ($user['is_admin']) {
+            header("Location: ./admin/index.php");
+        } else {
+            header("Location: index.php");
+        }
         exit;
     } else {
         $error = "帳號或密碼錯誤。";

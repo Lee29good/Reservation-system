@@ -26,16 +26,17 @@ if (!$seat_id || !$start_date || !$end_date) {
 }
 
 try {
-    // ✅ 先檢查：該座位在該期間有無其他人預約
+    // ✅ 先檢查：該座位在該期間有無其他人預約（忽略已取消的預約）
     $seatCheck = $pdo->prepare("
         SELECT 1 FROM reservation
         WHERE seat_id = :seat_id
+          AND status != 'cancelled'  -- 忽略已取消的預約
           AND (
               (:start_date BETWEEN start_date AND end_date) OR
               (:end_date BETWEEN start_date AND end_date) OR
               (start_date BETWEEN :start_date AND :end_date) OR
               (end_date BETWEEN :start_date AND :end_date)
-          )
+        )
         LIMIT 1
     ");
     $seatCheck->execute([
@@ -56,12 +57,13 @@ try {
     $userCheck = $pdo->prepare("
         SELECT 1 FROM reservation
         WHERE user_id = :user_id
+          AND status != 'cancelled'  -- 忽略已取消的預約
           AND (
               (:start_date BETWEEN start_date AND end_date) OR
               (:end_date BETWEEN start_date AND end_date) OR
               (start_date BETWEEN :start_date AND :end_date) OR
               (end_date BETWEEN :start_date AND :end_date)
-          )
+        )
         LIMIT 1
     ");
     $userCheck->execute([
@@ -78,10 +80,10 @@ try {
         exit;
     }
 
-    // ✅ 通過所有檢查，新增預約
+    // ✅ 通過所有檢查，新增預約，並設定狀態為 'reserved'
     $stmt = $pdo->prepare("
-        INSERT INTO reservation (seat_id, user_id, start_date, end_date)
-        VALUES (:seat_id, :user_id, :start_date, :end_date)
+        INSERT INTO reservation (seat_id, user_id, start_date, end_date, status)
+        VALUES (:seat_id, :user_id, :start_date, :end_date, 'reserved')
     ");
     $stmt->execute([
         ':seat_id' => $seat_id,

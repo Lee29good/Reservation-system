@@ -192,6 +192,7 @@ function openHistoryModal() {
 
         const fragment = document.createDocumentFragment();
 
+        const now = new Date().toISOString().split('T')[0];
         data.forEach(record => {
             const seatDiv = document.createElement('div');
             seatDiv.className = 'd-flex justify-content-between align-items-center border rounded px-3 py-2 mb-2 border-info';
@@ -199,16 +200,36 @@ function openHistoryModal() {
             const leftDiv = document.createElement('div');
             leftDiv.innerHTML = `<strong>座位：</strong> ${record.seat_id} (${record.position})`;
 
+            // 依據狀態設定文字與顏色
+            let statusText = '';
+            let statusClass = '';
+            const endDate = record.end_date;
+
+            if (record.status === 'cancelled') {
+                statusText = '已取消';
+                statusClass = 'text-danger';
+            } else if (record.status === 'checked_in') {
+                statusText = '已簽到';
+                statusClass = 'text-success';
+            } else if (record.status === 'reserved' && endDate < now) {
+                statusText = '未簽到';
+                statusClass = 'text-warning';
+            } else if (record.status === 'reserved') {
+                statusText = '已預約';
+                statusClass = 'text-primary';
+            }
+
             const rightDiv = document.createElement('div');
             rightDiv.className = 'text-end small';
             rightDiv.innerHTML = `
                 <div><strong>時間：</strong>${record.start_date} ~ ${record.end_date}</div>
                 <div><strong>房型：</strong>${record.room_type}</div>
+                <div><strong>狀態：</strong><span class="${statusClass}">${statusText}</span></div>
             `;
 
             seatDiv.appendChild(leftDiv);
             seatDiv.appendChild(rightDiv);
-            fragment.appendChild(seatDiv);
+            container.appendChild(seatDiv); // 假設 container 是你要放進去的父層
         });
 
         container.appendChild(fragment);
@@ -309,13 +330,16 @@ function openUsageModal() {
                 if (record.status === 'cancelled') {
                     statusText = '已取消';
                     statusClass = 'text-danger';
+                } else if (record.status === 'checked_in') {
+                    statusText = '已簽到';
+                    statusClass = 'text-success';
                 } else if (record.status === 'reserved' && endDate < now) {
-                    statusText = '已使用';
+                    statusText = '未簽到';
                     statusClass = 'text-success';
                 } else if (record.status === 'reserved') {
                     statusText = '已預約';
                     statusClass = 'text-primary';
-                }
+                }   
 
                 const rightDiv = document.createElement('div');
                 rightDiv.className = 'text-end small';

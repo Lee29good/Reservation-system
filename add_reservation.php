@@ -284,6 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const today = new Date().toISOString().split('T')[0];
     startDateInput.value = today;
+    startDateInput.min = today;
     function updateEndDateConstraints() {
         const roomType = selectedRoomLabel.textContent.trim();
         const startDate = new Date(startDateInput.value);

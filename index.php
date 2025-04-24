@@ -24,7 +24,7 @@ $sql = "SELECT r.reservation_id, r.start_date, r.end_date, s.room_type, s.positi
         JOIN seat s ON r.seat_id = s.seat_id
         WHERE r.user_id = :user_id 
           AND r.end_date >= :current_date 
-          AND r.status = 'reserved'";
+          AND r.status IN ('reserved', 'checked_in')";
 
 try {
     if (!isset($pdo)) {
@@ -101,21 +101,35 @@ try {
             <h4 class="mb-5 text-muted">您有預約資訊</h4>
             <div class="row justify-content-center">
                 <?php foreach ($reservations as $reservation): ?>
-                    <div class="col-12 col-md-8 col-lg-6"> <!-- ✅ 控制最大寬度 -->
+                    <div class="col-12 col-md-8 col-lg-6"> <!-- 控制最大寬度 -->
                         <div class="card mb-4 shadow-sm">
-                            <div class="card-header bg-primary text-white">
-                                預約空間：<?= htmlspecialchars($reservation['seat_id']) ?>
+                            <div class="card-header d-flex justify-content-between align-items-center bg-primary text-white" style="min-height: 60px;">
+                                <span>預約空間：<?= htmlspecialchars($reservation['seat_id']) ?></span>
+                                <?php if ($reservation['status'] === 'reserved'): ?>
+                                    <div class="d-flex gap-1">
+                                        <form action="/Reservation-system/includes/cancel_reservation.php" method="POST" onsubmit="return confirm('確定要取消這筆預約嗎？');" class="m-0">
+                                            <input type="hidden" name="reservation_id" value="<?= htmlspecialchars($reservation['reservation_id']) ?>">
+                                            <button type="submit" class="btn btn-danger btn-sm">取消預約</button>
+                                        </form>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                             <div class="card-body text-start">
                                 <p><strong>空間類型：</strong><?= htmlspecialchars($reservation['room_type']) ?></p>
                                 <p><strong>開始日期：</strong><?= htmlspecialchars($reservation['start_date']) ?></p>
                                 <p><strong>結束日期：</strong><?= htmlspecialchars($reservation['end_date']) ?></p>
 
-                                <!-- ✅ 取消預約按鈕 -->
-                                <form action="/Reservation-system/includes/cancel_reservation.php" method="POST" onsubmit="return confirm('確定要取消這筆預約嗎？');">
-                                    <input type="hidden" name="reservation_id" value="<?= htmlspecialchars($reservation['reservation_id']) ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm mt-3">取消預約</button>
-                                </form>
+                                <!-- 顯示簽到狀態 -->
+                                <p class="mt-3">
+                                    <strong>目前狀態：</strong>
+                                    <?php if ($reservation['status'] === 'checked_in'): ?>
+                                        <span class="text-success">✅ 已簽到</span>
+                                    <?php elseif ($reservation['status'] === 'reserved'): ?>
+                                        <span class="text-primary">📅 已預約</span>
+                                    <?php elseif ($reservation['status'] === 'cancelled'): ?>
+                                        <span class="text-danger">❌ 已取消</span>
+                                    <?php endif; ?>
+                                </p>
                             </div>
                         </div>
                     </div>
