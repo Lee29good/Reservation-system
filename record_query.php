@@ -301,7 +301,23 @@ function openCancelModal() {
 }
 
 function openUsageModal() {
-    fetch(`/Reservation-system/includes/reservation_all_record.php`)
+    // 獲取日期輸入框的值
+    const startInput = document.querySelector('input[name="start_date"]');
+    const endInput = document.querySelector('input[name="end_date"]');
+    
+    // 確保日期有效
+    const startDate = startInput.value;
+    const endDate = endInput.value;
+
+    if (!startDate || !endDate) {
+        alert("請選擇有效的日期範圍！");
+        return;
+    }
+
+    // 構建 URL 並將日期範圍作為查詢參數
+    const url = `/Reservation-system/includes/reservation_all_record.php?start_date=${startDate}&end_date=${endDate}`;
+
+    fetch(url)
         .then(res => res.json())
         .then(data => {
             const container = document.getElementById('usageContainer');
@@ -339,7 +355,7 @@ function openUsageModal() {
                 } else if (record.status === 'reserved') {
                     statusText = '已預約';
                     statusClass = 'text-primary';
-                }   
+                }
 
                 const rightDiv = document.createElement('div');
                 rightDiv.className = 'text-end small';

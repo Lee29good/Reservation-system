@@ -5,7 +5,7 @@ require_once 'db.php'; // 根據你的路徑調整
 
 try {
     $sql = "
-      SELECT block_start_date, block_end_date, seat_id, reason
+      SELECT block_start_date, block_end_date, seat_id, reason, block_id
       FROM block_time
       WHERE block_end_date >= CURDATE()
       ORDER BY seat_id DESC

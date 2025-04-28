@@ -22,7 +22,12 @@ include '../includes/db.php';
 // 取得今天日期
 $current_date = date('Y-m-d');
 
-// ✅ 查詢「今天有預約的所有使用者」資料
+// ✅ 查詢「今天有預約的使用者」資料
+// 先抓 GET 傳入的查詢條件
+$filter_username = $_GET['username'] ?? '';
+$filter_seat_id = $_GET['seat_id'] ?? '';
+
+// 基礎 SQL
 $sql = "SELECT r.reservation_id, r.start_date, r.end_date, r.status,
                s.room_type, s.position, s.seat_id,
                u.username
@@ -32,17 +37,26 @@ $sql = "SELECT r.reservation_id, r.start_date, r.end_date, r.status,
         WHERE :current_date BETWEEN r.start_date AND r.end_date
           AND r.status IN ('reserved', 'checked_in')";
 
+// 條件組裝
+$params = [':current_date' => $current_date];
+if (!empty($filter_username)) {
+    $sql .= " AND u.username LIKE :username";
+    $params[':username'] = "%" . $filter_username . "%";
+}
+if (!empty($filter_seat_id)) {
+    $sql .= " AND s.seat_id = :seat_id";
+    $params[':seat_id'] = $filter_seat_id;
+}
+
+// 執行查詢
 try {
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':current_date', $current_date, PDO::PARAM_STR);
-    $stmt->execute();
-
-    $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    $hasReservation = !empty($reservations);
-
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute($params);
+  $reservations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+  $hasReservation = !empty($reservations);
 } catch (Exception $e) {
-    header("Location: ../login.php");
-    exit;
+  header("Location: ../login.php");
+  exit;
 }
 ?>
 
@@ -95,8 +109,35 @@ try {
         <div class="icon mb-3">🔍</div>
         <?php if (!$hasReservation): ?>
             <h4 class="mb-5 text-muted">查無預約資料</h4>
+            
+            <form method="GET" class="row g-2 mb-4 justify-content-center">
+              <div class="col-auto">
+                <input type="text" class="form-control" name="username" placeholder="輸入使用者名稱" value="<?= htmlspecialchars($_GET['username'] ?? '') ?>">
+              </div>
+              <div class="col-auto">
+                <input type="text" class="form-control" name="seat_id" placeholder="輸入座位 ID" value="<?= htmlspecialchars($_GET['seat_id'] ?? '') ?>">
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-primary">查詢</button>
+                <a href="index.php" class="btn btn-secondary">重設</a> <!-- 換成你目前這頁的檔名 -->
+              </div>
+            </form>
+
             <?php else: ?>
-            <h4 class="mb-5 text-muted">您有預約資訊</h4>
+            <h4 class="mb-5 text-muted">預約資訊</h4>
+
+            <form method="GET" class="row g-2 mb-4 justify-content-center">
+              <div class="col-auto">
+                <input type="text" class="form-control" name="username" placeholder="輸入使用者名稱" value="<?= htmlspecialchars($_GET['username'] ?? '') ?>">
+              </div>
+              <div class="col-auto">
+                <input type="text" class="form-control" name="seat_id" placeholder="輸入座位 ID" value="<?= htmlspecialchars($_GET['seat_id'] ?? '') ?>">
+              </div>
+              <div class="col-auto">
+                <button type="submit" class="btn btn-primary">查詢</button>
+                <a href="index.php" class="btn btn-secondary">重設</a> <!-- 換成你目前這頁的檔名 -->
+              </div>
+            </form>
             <div class="row justify-content-center">
             <?php foreach ($reservations as $reservation): ?>
               <div class="col-12 col-md-8 col-lg-6">
