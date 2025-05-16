@@ -23,3 +23,4 @@ try {
 } catch (Exception $e) {
     echo "簽到失敗：" . $e->getMessage();
 }
+?>

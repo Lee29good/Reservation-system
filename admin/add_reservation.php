@@ -221,6 +221,28 @@ if (!isset($_SESSION['user_id'])) {
             </div>
         </div>
     </div>
+
+    <!-- 租借人輸入確認 Modal -->
+    <div class="modal fade" id="renterConfirmModal" tabindex="-1" aria-labelledby="renterConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="renterConfirmModalLabel">輸入租借人資訊</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="關閉"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                    <label for="renterNameInput" class="form-label">租借人姓名</label>
+                    <input type="text" class="form-control" id="renterNameInput" placeholder="請輸入租借人姓名">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-primary" id="confirmRenterBtn">確認租借</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -432,43 +454,88 @@ function openSelectSeatModal(roomType, startDate, endDate, position) {
     });
 }
 
+// JavaScript - Client Side
+let selectedSeatId = null;
+let selectedStartDate = null;
+let selectedEndDate = null;
+
+// 綁 confirmSeatBtn：先跳出輸入租借人Modal
 document.getElementById('confirmSeatBtn').addEventListener('click', () => {
-    // 1. 取得選取的 seat_id
     const selectedSeatInput = document.querySelector('input[name="selectedSeat"]:checked');
     if (!selectedSeatInput) {
         alert("請選擇一個座位！");
         return;
     }
-    const seatId = selectedSeatInput.value;
+    
+    selectedSeatId = selectedSeatInput.value;
+    selectedStartDate = document.getElementById('startDate').value;
+    selectedEndDate = document.getElementById('endDate').value;
+    
+    // 檢查日期是否合法
+    if (!selectedStartDate || !selectedEndDate) {
+        alert("請選擇開始和結束日期！");
+        return;
+    }
+    
+    // 檢查結束日期是否在開始日期之後
+    if (new Date(selectedEndDate) < new Date(selectedStartDate)) {
+        alert("結束日期必須在開始日期之後！");
+        return;
+    }
 
-    // 2.取得 start & end date
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+    console.log("🛋️ SeatID:", selectedSeatId);
+    console.log("📅 日期:", selectedStartDate, "~", selectedEndDate);
 
-    console.log("✔️ seat_id:", seatId);
-    console.log("📅 start:", startDate, "| end:", endDate);
+    // 打開租借人輸入的 Modal
+    const renterModal = new bootstrap.Modal(document.getElementById('renterConfirmModal'));
+    renterModal.show();
+});
 
-    // 3. 發送 API 請求（範例）
-    fetch('/Reservation-system/includes/create_reservation.php', {
+// 綁 confirmRenterBtn：在 Modal 裡按「確認租借」
+document.getElementById('confirmRenterBtn').addEventListener('click', () => {
+    const renterName = document.getElementById('renterNameInput').value.trim();
+    if (!renterName) {
+        alert("請輸入租借人姓名！");
+        return;
+    }
+
+    console.log("👤 租借人：", renterName);
+
+    // 關掉輸入Modal
+    const renterModalEl = document.getElementById('renterConfirmModal');
+    const renterModalInstance = bootstrap.Modal.getInstance(renterModalEl);
+    if (renterModalInstance) {
+        renterModalInstance.hide();
+    }
+
+    // 發送 API 請求（帶上租借人資料）
+    fetch('/Reservation-system/includes/admin_create_reservation.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            seat_id: seatId,
-            start_date: startDate,
-            end_date: endDate
+            seat_id: selectedSeatId,
+            start_date: selectedStartDate,
+            end_date: selectedEndDate,
+            borrower_name: renterName // 租借人姓名（對應資料庫中的 username）
         })
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error('伺服器回應錯誤：' + res.status);
+        }
+        return res.json();
+    })
     .then(data => {
         if (data.success) {
             alert("✅ 預約成功！");
-            // 重新整理或顯示成功畫面
-            // ✅ 關閉 Modal
+            // 關掉原本選座位的 Modal
             const selectSeatModalEl = document.getElementById('selectSeatModal');
             const modalInstance = bootstrap.Modal.getInstance(selectSeatModalEl);
             if (modalInstance) {
                 modalInstance.hide();
             }
+            // 重新載入頁面以顯示最新預約狀態
+            window.location.reload();
         } else {
             alert("❌ 預約失敗：" + data.message);
         }
@@ -478,6 +545,5 @@ document.getElementById('confirmSeatBtn').addEventListener('click', () => {
         alert("伺服器錯誤，請稍後再試。");
     });
 });
-
 </script>
 </html>
