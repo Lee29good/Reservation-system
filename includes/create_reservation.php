@@ -131,7 +131,7 @@ try {
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
             $mail->Username = 'LiLee20020404@gmail.com';          // ← 改成你的 Gmail
-            $mail->Password = 'vzavjovjomqicxlc';                 // ← 剛剛產生的應用程式密碼
+            $mail->Password = 'xxxxxxxxxxxxxxxxxxxxx';                 // ← 剛剛產生的應用程式密碼
             $mail->SMTPSecure = 'tls';
             $mail->Port = 587;
 
